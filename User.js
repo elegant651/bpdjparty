@@ -37,7 +37,6 @@ _.init = function(socket){
 	this.values = [];
 	this.socket = socket;
 	this.id = uuid();
-console.log(this.id);
 
 	this.joinTime = new Date();
 
