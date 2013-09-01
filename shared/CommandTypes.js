@@ -16,6 +16,12 @@
 	// notify the room a user has changed a value.
 	c.USER_CHANGE = 4;
 
+	c.SET_VALUE = 5;
+
+	c.ERROR = 6;
+
+	c.JOIN_ROOM = 7;
+
 	if(typeof exports == 'undefined'){
 		exports = window;
 	}

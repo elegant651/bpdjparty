@@ -12,6 +12,10 @@ var RoomManager = function() {};
 
 var _ = RoomManager.prototype;
 
+_.removeUserListeners = function(user){
+	user.removeAllListeners(CommandTypes.JOIN_ROOM);
+};
+
 //assigns the user to a random room
 _.assignRoom = function(user){
 	var activeRoom;
@@ -41,7 +45,8 @@ _.assignRoom = function(user){
 		rooms.push(activeRoom);
 	}
 
-	console.log("activeUser:"+user.id+" // activeRoom:"+activeRoom.id);
+console.log("activeUser:"+user.id+" // activeRoom:"+activeRoom.id);
+	this.addUserToRoom(user, activeRoom);	
 }
 
 _.createRoom = function(){
@@ -50,9 +55,48 @@ _.createRoom = function(){
 	return room;
 };
 
-_.handleUserLeftRoom = function(room, user){
+_.addUserToRoom = function(user, room){
+	room.addUser(user);
+	this.removeUserListeners(user);	
+	userHash[user.id] = room;
+};
 
+_.handleUserLeftRoom = function(room, user){
+	delete userHash[user.id];
+
+	this.removeUserListeners(user);
+	
+	if(room.userCount == 0){
+		this.handleRoomEmpty(room);	
+	}	
+};
+
+_.handleRoomEmpty = function(room){
+	var wasRemoved = false;
+
+	if(roomHash[room.id]){
+		delete roomHash[room.id];
+		for(var i=0; i<rooms.length; i++){
+			if(rooms[i].id == room.id){
+				wasRemoved = true;
+				rooms.splice(i,1);
+				break;
+			}
+		}
+	}
+
+	if(wasRemoved){
+		room.removeAllListeners(CommandTypes.USER_LEFT_ROOM);
+	}
 }
+
+_.sortRooms = function(a, b){
+	if(a.userCount < b.userCount){
+		return -1;
+	}else{
+		return 1;
+	}
+};	 
 
 //singletone
 var roomManager;

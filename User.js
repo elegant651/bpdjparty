@@ -22,6 +22,16 @@ _.__defineSetter__('id', function(value){
 	this._data.id = value;
 });
 
+_.__defineGetter__('color', function() { return this._data.color; });
+_.__defineSetter__('color', function(value){
+	this._data.color = value;
+});
+
+_.__defineGetter__('joinTime', function() { return this._data.joinTime; });
+_.__defineSetter__('joinTime', function(value){
+	this._data.joinTime = value;
+});
+
 _.__defineGetter__('socket', function() { return this._socket; });
 _.__defineSetter__('socket', function(value){
 	this._socket = value;
@@ -41,10 +51,24 @@ _.init = function(socket){
 	this.joinTime = new Date();
 
 	this.socket.on('disconnect', proxy.create(this, this.handleDisconnect));		
+	this.socket.on(CommandTypes.SET_VALUE, proxy.create(this, this.handleSetValue));
+};
+
+_.handleSetValue = function(index, data){
+	this.values.push({index:index, data:data});
+	this.emit(CommandTypes.USER_CHANGE, index, data, this);
+};
+
+_.send = function(type, data){
+	this.socket.emit(type, data);
 };
 
 _.handleDisconnect = function(values){
 	this.emit('disconnect', this, values);
+};
+
+_.error = function(type, message){
+	this.send(CommandTypes.ERROR, {message:message, type:type});
 };
 
 exports.create = function(socket){

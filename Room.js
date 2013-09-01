@@ -38,6 +38,64 @@ _.init = function(){
 	this.startTime = [];
 };
 
+_.addUser = function(user){
+	user.on(CommandTypes.USER_CHANGE, proxy.create(this, this.handleUserChange));	
+	user.on('disconnect', proxy.create(this, this.handleUserDisconnect));
+	
+	user.color = 0xffffff*Math.random()|0;
+	user.send(CommandTypes.JOIN, {user:user.publicData, data:this.serialize()});
+	this.users.push(user);	
+	this.send(CommandTypes.USER_JOINED_ROOM, user.publicData);		
+};
+
+_.handleUserChange = function(index, data, user){
+	this.send(CommandTypes.USER_CHANGE, {index:index, values:data, userId:user.id}, user);
+};
+
+_.serialize = function(){
+	var packet = {users:[]};
+	for(var n in this._data){
+		packet[n] = this._data[n];
+	}
+
+	for(var i=0; i < this.users.length; i++){
+		packet.users.push(this.users[i].publicData);
+	}
+
+	return packet;
+}
+
+_.handleUserDisconnect = function(user){
+	this.removeUser(user);
+};
+
+_.removeUser = function(user){
+	for(var i=0; i<this.users.length; i++){
+		var u = this.users[i];
+		if(u == user){
+			this.users.splice(i, 1);
+			break;
+		}
+	}
+
+	user.removeAllListeners(CommandTypes.USER_CHANGE);	
+	user.removeAllListeners('disconnect');
+	
+	this.send(CommandTypes.USER_LEFT_ROOM, user.id);
+	///notify the RoomManager
+	this.emit(CommandTypes.USER_LEFT_ROOM, this, user);
+	user.send('disconnect');			
+};
+
+//sends a message to all the users in this room.
+_.send = function(type, data, user){
+	for(var i=0; i<this.userCount; i++){
+		var u = this.users[i];
+		//except own
+		if(user && u.id == user.id) { continue; }
+		u.send(type, data);
+	}	
+};
 
 exports.create = function(){
 	return new Room();
