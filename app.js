@@ -5,6 +5,7 @@ var express = require('express'),
 var app = express();
 var User = require('./User');
 var roomManager = require('./RoomManager').getInstance();
+var audioManager = require('./AudioManager').getInstance();
 
 var PORT_NUMBER = 8888;
 
@@ -21,7 +22,8 @@ io.configure(function(){
 io.sockets.on('connection', function(socket){
 	
 	var u = User.create(socket);	
-	roomManager.assignRoom(u);	
+	roomManager.assignRoom(u);
+	audioManager.assignUser(u);	
 });
 
 app.get('/', function(req, res){
