@@ -39,17 +39,22 @@ _.init = function(){
 };
 
 _.addUser = function(user){
-	user.on(CommandTypes.USER_CHANGE, proxy.create(this, this.handleUserChange));	
+	user.on(CommandTypes.CHANGE_VALUE, proxy.create(this, this.handleChangeValue));	
+	user.on(CommandTypes.CHANGE_ASSET, proxy.create(this, this.handleChangeAsset));
 	user.on('disconnect', proxy.create(this, this.handleUserDisconnect));
-	
+
 	user.color = 0xffffff*Math.random()|0;
 	user.send(CommandTypes.JOIN, {user:user.publicData, data:this.serialize()});
 	this.users.push(user);	
 	this.send(CommandTypes.USER_JOINED_ROOM, user.publicData);		
 };
 
-_.handleUserChange = function(index, data, user){
-	this.send(CommandTypes.USER_CHANGE, {index:index, values:data, userId:user.id}, user);
+_.handleChangeValue = function(index, data, user){
+	this.send(CommandTypes.CHANGE_VALUE, {index:index, values:data, userId:user.id}, user);
+};
+
+_.handleChangeAsset = function(index, data, user){
+	this.send(CommandTypes.CHANGE_ASSET, {index:index, values:data, userId:user.id}, user);
 };
 
 _.serialize = function(){

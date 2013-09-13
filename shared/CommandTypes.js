@@ -14,13 +14,17 @@
 	c.USER_LEFT_ROOM = 3;
 
 	// notify the room a user has changed a value.
-	c.USER_CHANGE = 4;
+	c.CHANGE_VALUE = 4;
 
 	c.SET_VALUE = 5;
 
 	c.ERROR = 6;
 
 	c.JOIN_ROOM = 7;
+
+	c.CHANGE_ASSET = 8;
+
+	c.INIT_ASSET = 9;
 
 	if(typeof exports == 'undefined'){
 		exports = window;

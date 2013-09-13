@@ -11,7 +11,7 @@ _.__defineGetter__('assetCount', function(){ return this._assetIds.length; });
 
 
 _.init = function(){
-	this.assetIds = [0,1,2,3];
+	this.assetIds = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
 }
 
 _.setAssetIdx = function(type, index){

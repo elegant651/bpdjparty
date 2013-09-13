@@ -42,9 +42,28 @@ _.__defineSetter__('values', function(value){
 	this._data.values = value;
 });
 
+_.__defineGetter__('assetvalues', function() { return this._data.assetvalues; });
+_.__defineSetter__('assetvalues', function(value){
+	this._data.assetvalues = value;
+});
+
+_.__defineGetter__('instType', function() { return this._data.instType; });
+_.__defineSetter__('instType', function(value){
+	this._data.instType = value;
+});
+
+_.__defineGetter__('assetIdx', function() { return this._data.assetIdx; });
+_.__defineSetter__('assetIdx', function(value){
+	this._data.assetIdx = value;
+});
+
+
 _.init = function(socket){
 	this._data = {};
 	this.values = [];
+
+	this.assetvalues = [];
+
 	this.socket = socket;
 	this.id = uuid();
 
@@ -52,11 +71,17 @@ _.init = function(socket){
 
 	this.socket.on('disconnect', proxy.create(this, this.handleDisconnect));		
 	this.socket.on(CommandTypes.SET_VALUE, proxy.create(this, this.handleSetValue));
+	this.socket.on(CommandTypes.CHANGE_ASSET, proxy.create(this, this.handleChangeAsset));
 };
 
 _.handleSetValue = function(index, data){
 	this.values.push({index:index, data:data});
-	this.emit(CommandTypes.USER_CHANGE, index, data, this);
+	this.emit(CommandTypes.CHANGE_VALUE, index, data, this);
+};
+
+_.handleChangeAsset = function(index, data){
+	//this.assetvalues.push({index:index, data:data});
+	this.emit(CommandTypes.CHANGE_ASSET, index, data, this);
 };
 
 _.send = function(type, data){
