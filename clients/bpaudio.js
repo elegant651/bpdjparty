@@ -44,7 +44,7 @@ var bpaudio = {};
 	
 	var context = 0;
 	var source = 0;
-	var gainNode = 0;
+	var mGainNode = 0;
 	var preset;
 	var tuna;
 	var mChorus;
@@ -56,12 +56,13 @@ var bpaudio = {};
 	var mWahwah;	
 
 	var btime = new Date();
-	var playSources = [];
+	var playSources = [0,0,0,0,0,0,0,0,0,0,0];
 
 	this.init = function(){
 		context = new webkitAudioContext();
 		preset = new Preset();
 		tuna = new Tuna(context);
+		mGainNode = context.createGainNode();
 
 		initAssets();
 		initEffects();
@@ -175,8 +176,9 @@ var bpaudio = {};
 
 	var AudioBus = function(outputGain, type){
 		this.input = context.createGainNode();
+		//this.input.gain.value = 0.4;
 		var output = outputGain;
-		output.gain.value = 0.2;
+		output.gain.value = 0.3;
 	
 		//	delay = new tuna.Delay(),
 		//	phaser = new tuna.Phaser();
@@ -204,8 +206,7 @@ var bpaudio = {};
 	};
 
 	function createSource(buffer, type){
-		var gainNode = context.createGainNode();
-		var bus = new AudioBus(gainNode, type);
+		var bus = new AudioBus(mGainNode, type);
 		
 		var source = context.createBufferSource();
 		source.buffer = buffer;
@@ -218,7 +219,7 @@ var bpaudio = {};
 
 		return {
 			source: source,
-			gainNode: gainNode
+			gainNode: mGainNode
 		};
 	}	
 
@@ -234,8 +235,8 @@ var bpaudio = {};
 		var currTime = context.currentTime;
 	
 		//fade in
-		gainNode.gain.linearRampToValueAtTime(0, currTime);
-		gainNode.gain.linearRampToValueAtTime(1, currTime + FADE_TIME);
+		//gainNode.gain.linearRampToValueAtTime(0, currTime);
+		//gainNode.gain.linearRampToValueAtTime(1, currTime + FADE_TIME);
 
 		if(isChanged){
 			source.start(0);
@@ -262,10 +263,11 @@ console.log("diff:"+diff_time);
 		var currTime = context.currentTime;
 	
 		//fade out
-		gainNode.gain.linearRampToValueAtTime(1, currTime + duration - FADE_TIME);
-		gainNode.gain.linearRampToValueAtTime(0, currTime + duration);
+		//gainNode.gain.linearRampToValueAtTime(1, currTime + duration - FADE_TIME);
+		//gainNode.gain.linearRampToValueAtTime(0, currTime + duration);
 
 		context.timer = setTimeout(function(){
+			source.stop(0);
 			playHelper(bufferLater, type, true);		
 		}, (duration - FADE_TIME) * 1000);
 	}
@@ -273,12 +275,17 @@ console.log("diff:"+diff_time);
 	this.changeVolume = function(type, value){
 		var gainNode = playSources[type].gainNode; 
 		gainNode.gain.value = value;
-		console.log("vol:"+gainNode.gain.value);
+	}
+
+	this.changePitch = function(type, value){
+		var source = playSources[type].source;
+		source.playbackRate.value = value;
 	}
 
 	this.stopSource = function(type){
 		var source = playSources[type].source;
 		source.stop(0);
+		playSources[type] = 0;
 	}
 
 //////deprecated
